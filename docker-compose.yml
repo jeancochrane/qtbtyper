@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  node:
+    image: node:10-slim
+    volumes:
+      - .:/qtbtyper
+    working_dir: /qtbtyper
+    ports:
+      - "1234:1234"
+      - "1235:1235"
