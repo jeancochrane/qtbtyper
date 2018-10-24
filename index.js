@@ -1,17 +1,29 @@
 const doc = document;  // eslint-disable-line no-undef
 
 var textarea = doc.getElementById('textarea');
-textarea.value = 'Type here to get started!';
+const wordButtons = doc.getElementsByClassName('word-button');
 
-function addWord(word) {
-    textarea.value += word;
-}
+let vocab = [
+    'dolores', 'placeat', 'culpa', 'laborum', 'natus', 'dignissimos', 'et', 'ut',
+    'omnis', 'rerum', 'quas', 'exercitationem', 'tempore', 'repellat', 'enim',
+    'soluta', 'error', 'deleniti', 'est', 'perspiciatis'
+];
 
 function addFullWord(word) {
     textarea.value += ' ' + word + ' ';
 }
 
-const wordButtons = doc.getElementsByClassName('word-button');
+function updateRecs() {
+    let vocabCopy = vocab.slice()
+    for (let button of wordButtons) {
+        // Sample a new word randomly from the vocab.
+        let randomIndex = Math.floor(Math.random() * vocabCopy.length);
+        let newWord = vocabCopy.splice(randomIndex, 1)[0];  // `splice` returns an array
+
+        button.value = newWord;
+        button.innerHTML = newWord;
+    }
+}
 
 for (let button of wordButtons) {
     button.addEventListener('click', event => {
@@ -20,12 +32,15 @@ for (let button of wordButtons) {
 }
 
 textarea.addEventListener('keypress', event => {
-    if (event.key == 'Enter') {
+    if (event.key === 'Enter') {
         if (!event.shiftKey) {
             event.preventDefault();
             const firstWord = wordButtons[0].value;
             addFullWord(firstWord);
+            updateRecs();
         }
+    } else if (event.key === ' ') {
+        updateRecs();
     }
 });
 
