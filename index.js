@@ -74,10 +74,27 @@ function getRandomWord(vocab) {
 }
 
 function getPredictedWord(vocab, model) {
-    const prevInput = textarea.value.split(/\s+/);  // match any number of whitespace-like chars
+    let prevInput = textarea.value.split(/\s+/);  // match any number of whitespace-like chars
     const hasPrevInput = !(prevInput.length === 1 && prevInput[0] === '');
     let predictedIdx = 0;
     if (hasPrevInput) {
+        if (prevInput.length < 9) {
+            // Not yet 9 words -- repeat some of them
+            let inputLength = prevInput.length;
+            let counter = 0;
+            while (prevInput.length < 9) {
+                if (counter < inputLength) {
+                    prevInput.push(prevInput[counter]);
+                    counter++;
+                } else {
+                    // Reset the counter and start over
+                    counter = 0;
+                }
+            }
+        } else {
+            // Take the last 9 words
+            prevInput = prevInput.slice(0, 9);
+        }
         const encodedPrevInput = prevInput.map(word => vocab.toIdx(word));
         const inputVector = tf.oneHot(tf.tensor1d(encodedPrevInput, 'int32'), vocab.length).expandDims(0);
         const predictedLogits = model.predict(inputVector);
