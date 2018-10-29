@@ -62,7 +62,8 @@ doc.getElementById('weights-upload').addEventListener('change', e => {
 });
 
 function addFullWord(word) {
-    textarea.value += ' ' + word;
+    const wordAddition = (textarea.value.endsWith(' ') || textarea.value === '') ? word : ' ' + word;
+    textarea.value += wordAddition;
 }
 
 function getRandomWord(vocab) {
@@ -97,8 +98,12 @@ function getPredictedWord(vocab, model) {
         }
         const encodedPrevInput = prevInput.map(word => vocab.toIdx(word));
         const inputVector = tf.oneHot(tf.tensor1d(encodedPrevInput, 'int32'), vocab.length).expandDims(0);
-        const predictedLogits = model.predict(inputVector);
-        predictedIdx = tf.multinomial(predictedLogits.flatten(), 1).dataSync()[0];
+        let preds = model.predict(inputVector);
+        preds = preds.flatten();
+        preds = tf.log(preds).div(tf.tensor1d([0.5])); // Temperature
+        let expPreds = tf.exp(preds);
+        preds = expPreds.div(tf.sum(expPreds));
+        predictedIdx = tf.multinomial(preds, 1).dataSync()[0];
     } else {
         predictedIdx = getRandomWord(vocab);
     }
@@ -119,6 +124,7 @@ function updateRecs() {
 for (let button of wordButtons) {
     button.addEventListener('click', event => {
         addFullWord(event.target.value);
+        updateRecs();
     });
 }
 
